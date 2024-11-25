@@ -91,5 +91,21 @@ all_shot_data <- all_shot_data %>%
 all_shot_joined <- all_shot_data %>% 
   left_join(player_info, join_by("composite_key" == "composite_key"))
 
+# we also want to load in the league averages and join this to our all_shots24
+league <- hoopR::nba_shotchartdetail(context_measure = "FGA")
+
+# since it is a list, we need to choose LeagueAverages
+league_averages <- league$LeagueAverages
+
+# join this to all_shots24
+all_shots24_la <- all_shot_joined %>% 
+  left_join(league_averages, by = c("SHOT_ZONE_BASIC", "SHOT_ZONE_AREA" , "SHOT_ZONE_RANGE"),
+            suffix = c("_shot_chart", "_league")) %>% 
+  rename(
+    "league_FGA" = FGA,
+    "league_FGM" = FGM,
+    "league_FG_PCT" = FG_PCT
+  )
+
 # save to your machine 
-write_csv("FILE_NAME.csv", all_shot_joined, col_names = T)
+write_csv(all_shots24_la, "FILE_NAME.csv", col_names = T)
